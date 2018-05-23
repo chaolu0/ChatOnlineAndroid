@@ -2,6 +2,7 @@ package com.shxy.chatonlineandroid.ui;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -9,6 +10,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -18,8 +21,10 @@ import com.shxy.chatonlineandroid.bean.ChatMessage;
 import com.shxy.chatonlineandroid.bean.JoinRoomResp;
 import com.shxy.chatonlineandroid.mina.ClientHandler;
 import com.shxy.chatonlineandroid.mina.MsgCallBack;
+import com.shxy.chatonlineandroid.utils.SPHelper;
 
 import org.apache.mina.core.future.ConnectFuture;
+import org.apache.mina.core.future.WriteFuture;
 import org.apache.mina.core.service.IoConnector;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
@@ -44,16 +49,47 @@ public class ChatActivity extends AppCompatActivity implements MsgCallBack{
     private static final Integer PORT = 9876;
     private IoSession session = null;
     private IoConnector connector = null;
+    private ChatAdapter adapter;
+    private EditText msgEdit;
+    private Button sendButton;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
-        initMina();
+        new MyAsyncTask().execute();
         mListView = (ListView) findViewById(R.id.listview);
-        ChatAdapter adapter = new ChatAdapter(messageList, getApplicationContext());
+        adapter = new ChatAdapter(messageList, getApplicationContext());
         mListView.setAdapter(adapter);
+        msgEdit = (EditText) findViewById(R.id.edit);
+        sendButton = (Button) findViewById(R.id.send);
+        sendButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (session == null)
+                    return;
+                SendBody body = new SendBody();
+                body.setKey("forward");
+                body.setData(msgEdit.getText().toString());
+                WriteFuture future = session.write(body);
+                future.awaitUninterruptibly();
+                messageList.add(new ChatMessage(SPHelper.get(getApplication(),"username"),msgEdit.getText().toString()));
+                adapter.notifyDataSetChanged();
+            }
+        });
     }
+    class MyAsyncTask extends AsyncTask<Void,Void,Void>{
 
+        @Override
+        protected Void doInBackground(Void... voids) {
+            initMina();
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            adapter.notifyDataSetChanged();
+        }
+    }
     private void initMina() {
         Intent intent = getIntent();
         JoinRoomResp resp = (JoinRoomResp) intent.getSerializableExtra("data");
@@ -68,7 +104,14 @@ public class ChatActivity extends AppCompatActivity implements MsgCallBack{
         ConnectFuture future = connector.connect(new InetSocketAddress(resp.getRemote(),resp.getPort()));
         future.awaitUninterruptibly();
         session = future.getSession();
-
+        System.out.println("connected");
+        int i = intent.getIntExtra("i",0);
+        SendBody body = new SendBody();
+        body.setKey("add");
+        body.setData(i+"");
+        System.out.println(session.isConnected());
+        session.write(body);
+        System.out.println("send finish");
     }
 
     @Override
@@ -78,8 +121,9 @@ public class ChatActivity extends AppCompatActivity implements MsgCallBack{
     }
 
     @Override
-    public void onRecvMsg(SendBody body) {
-
+    public void onRecvMsg(ChatMessage body) {
+        messageList.add(body);
+        adapter.notifyDataSetChanged();
     }
 
     private class ChatAdapter extends BaseAdapter {

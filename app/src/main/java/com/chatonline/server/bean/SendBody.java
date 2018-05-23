@@ -10,15 +10,20 @@ public class SendBody implements Serializable {
     private String msg;
 
     private String data;
+    private static final long serialVersionUID = 3624999999L;
+
+    public SendBody() {
+    }
+
     private Map<String, String> map = new HashMap<>();
-
-    public Map<String, String> getMap() {
-        return map;
-    }
-
-    public void setMap(Map<String, String> map) {
-        this.map = map;
-    }
+//
+//    public Map<String, String> getMap() {
+//        return map;
+//    }
+//
+//    public void setMap(Map<String, String> map) {
+//        this.map = map;
+//    }
 
     public String getKey() {
         return key;
@@ -46,7 +51,6 @@ public class SendBody implements Serializable {
 
     @Override
     public String toString() {
-        return key + "\n" + msg + "\n" + data + "\n"
-                + map.toString();
+        return key + "\n" + msg + "\n" + data + "\n";
     }
 }

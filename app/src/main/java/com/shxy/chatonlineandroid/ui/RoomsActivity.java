@@ -43,12 +43,14 @@ public class RoomsActivity extends AppCompatActivity {
 
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+            public void onItemClick(AdapterView<?> adapterView, View view, final int i, long l) {
 
                 RequestParams params = new RequestParams();
+                params.put("houseId", rooms.get(i).getHouseId());
                 params.put("username",SPHelper.get(getApplicationContext(),"username"));
                 params.put("token",SPHelper.get(getApplicationContext(),"token"));
-                params.put("houseId", rooms.get(i).getHoseId());
+
+                System.out.println(params.toString());
                 HttpUtils.post("/upper/add_room", params, new HttpUtils.Listener() {
                     @Override
                     public void success(byte[] info) {
@@ -60,13 +62,15 @@ public class RoomsActivity extends AppCompatActivity {
                             String remote = resp.getRemote();
                             Intent intent = new Intent(RoomsActivity.this,ChatActivity.class);
                             intent.putExtra("data",resp);
+                            intent.putExtra("i",i);
+                            SPHelper.sava(getApplicationContext(),"token",resp.getToken());
                             startActivity(intent);
                         }
                     }
 
                     @Override
                     public void failed(byte[] info) {
-                        Toast.makeText(RoomsActivity.this, "网络错误", Toast.LENGTH_LONG).show();
+                        Toast.makeText(RoomsActivity.this, new String(info), Toast.LENGTH_LONG).show();
                     }
                 });
             }
@@ -119,8 +123,8 @@ public class RoomsActivity extends AppCompatActivity {
             }
 
             Room msg = list.get(i);
-            holder.idTv.setText(msg.getHoseId());
-            holder.inTv.setText(msg.getNowCount() + "/" + msg.getMaxCount());
+            holder.idTv.setText(msg.getHouseId()+"");
+            holder.inTv.setText(msg.getNowCount() + "/" + msg.getMaxCount()+"");
             return view;
         }
     }
