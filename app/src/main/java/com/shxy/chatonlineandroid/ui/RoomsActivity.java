@@ -5,6 +5,9 @@ import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -32,13 +35,14 @@ public class RoomsActivity extends AppCompatActivity {
     private ListView mListView;
     private List<Room> rooms = new ArrayList<>();
     private LoginResp resp;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_rooms);
         initData();
         mListView = (ListView) findViewById(R.id.listview);
-        RoomsAdapter adapter = new RoomsAdapter(rooms,getApplicationContext());
+        RoomsAdapter adapter = new RoomsAdapter(rooms, getApplicationContext());
         mListView.setAdapter(adapter);
 
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -47,23 +51,23 @@ public class RoomsActivity extends AppCompatActivity {
 
                 RequestParams params = new RequestParams();
                 params.put("houseId", rooms.get(i).getHouseId());
-                params.put("username",SPHelper.get(getApplicationContext(),"username"));
-                params.put("token",SPHelper.get(getApplicationContext(),"token"));
+                params.put("username", SPHelper.get(getApplicationContext(), "username"));
+                params.put("token", SPHelper.get(getApplicationContext(), "token"));
 
                 System.out.println(params.toString());
                 HttpUtils.post("/upper/add_room", params, new HttpUtils.Listener() {
                     @Override
                     public void success(byte[] info) {
                         String msg = new String(info);
-                        JoinRoomResp resp = new Gson().fromJson(msg,JoinRoomResp.class);
-                        if (resp.getState() == 0){
-                            Toast.makeText(getApplicationContext(),resp.getMsg(),Toast.LENGTH_SHORT).show();
+                        JoinRoomResp resp = new Gson().fromJson(msg, JoinRoomResp.class);
+                        if (resp.getState() == 0) {
+                            Toast.makeText(getApplicationContext(), resp.getMsg(), Toast.LENGTH_SHORT).show();
                         } else {
                             String remote = resp.getRemote();
-                            Intent intent = new Intent(RoomsActivity.this,ChatActivity.class);
-                            intent.putExtra("data",resp);
-                            intent.putExtra("i",i);
-                            SPHelper.sava(getApplicationContext(),"token",resp.getToken());
+                            Intent intent = new Intent(RoomsActivity.this, ChatActivity.class);
+                            intent.putExtra("data", resp);
+                            intent.putExtra("i", i);
+                            SPHelper.sava(getApplicationContext(), "token", resp.getToken());
                             startActivity(intent);
                         }
                     }
@@ -83,7 +87,7 @@ public class RoomsActivity extends AppCompatActivity {
         rooms.addAll(resp.getRooms());
     }
 
-    private class RoomsAdapter extends BaseAdapter{
+    private class RoomsAdapter extends BaseAdapter {
         private Context mContext;
         private List<Room> list;
         private LayoutInflater inflater;
@@ -112,25 +116,43 @@ public class RoomsActivity extends AppCompatActivity {
         @Override
         public View getView(int i, View view, ViewGroup viewGroup) {
             ViewHolder holder = null;
-            if (view == null){
+            if (view == null) {
                 holder = new ViewHolder();
-                view = inflater.inflate(R.layout.roomlist_item,null);
+                view = inflater.inflate(R.layout.roomlist_item, null);
                 holder.idTv = view.findViewById(R.id.roomid);
                 holder.inTv = view.findViewById(R.id.room_info);
                 view.setTag(holder);
-            }else{
+            } else {
                 holder = (ViewHolder) view.getTag();
             }
 
             Room msg = list.get(i);
-            holder.idTv.setText(msg.getHouseId()+"");
-            holder.inTv.setText(msg.getNowCount() + "/" + msg.getMaxCount()+"");
+            holder.idTv.setText(msg.getHouseId() + "");
+            holder.inTv.setText(msg.getNowCount() + "/" + msg.getMaxCount() + "");
             return view;
         }
     }
-    private class ViewHolder{
+
+    private class ViewHolder {
         public TextView idTv;
         public TextView inTv;
 
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.normal, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.opt1:
+                startActivity(new Intent(RoomsActivity.this, ProfileActivity.class));
+                break;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

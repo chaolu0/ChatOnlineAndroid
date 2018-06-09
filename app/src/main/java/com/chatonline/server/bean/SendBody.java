@@ -15,7 +15,7 @@ public class SendBody implements Serializable {
     public SendBody() {
     }
 
-    private Map<String, String> map = new HashMap<>();
+//    private Map<String, String> map = new HashMap<>();
 //
 //    public Map<String, String> getMap() {
 //        return map;

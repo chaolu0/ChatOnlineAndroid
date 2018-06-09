@@ -97,8 +97,45 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             }
         });
 
+        Button registerButton = (Button) findViewById(R.id.register);
+        registerButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                register();
+            }
+        });
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
+    }
+
+    private void register() {
+        mEmailView.setError(null);
+        mPasswordView.setError(null);
+
+        // Store values at the time of the login attempt.
+        final String mUsername = mEmailView.getText().toString();
+        String mPassword = mPasswordView.getText().toString();
+
+        showProgress(true);
+        RequestParams params = new RequestParams();
+        params.put("username", mUsername);
+        params.put("password", mPassword);
+        HttpUtils.post("/upper/register", params, new HttpUtils.Listener() {
+            @Override
+            public void success(byte[] info) {
+                showProgress(false);
+                String msg = new String(info);
+                System.out.println("infor" + msg);
+                LoginResp resp = new Gson().fromJson(msg, LoginResp.class);
+                Toast.makeText(LoginActivity.this, resp.getMsg(), Toast.LENGTH_LONG).show();
+
+            }
+
+            @Override
+            public void failed(byte[] info) {
+                Toast.makeText(LoginActivity.this, "网络错误", Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     private void populateAutoComplete() {
