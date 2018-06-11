@@ -237,6 +237,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                         Toast.makeText(LoginActivity.this, resp.getMsg(), Toast.LENGTH_LONG).show();
                     } else {
                         SPHelper.sava(getApplicationContext(), "username", mUsername);
+                        SPHelper.sava(getApplication(),"nickname",resp.getNickname());
                         SPHelper.sava(getApplicationContext(),"token",resp.getToken());
                         Intent intent = new Intent(LoginActivity.this, RoomsActivity.class);
                         intent.putExtra("data",resp);

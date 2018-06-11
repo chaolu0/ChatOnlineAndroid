@@ -88,7 +88,7 @@ public class ProfileActivity extends AppCompatActivity {
                 .setPositiveButton("确定", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        String nick = edt.getText().toString();
+                        final String nick = edt.getText().toString();
                         RequestParams params = new RequestParams();
                         System.out.println("token = " + SPHelper.get(getApplicationContext(),"token"));
                         params.put("username",SPHelper.get(getApplicationContext(),"username"));
@@ -101,6 +101,7 @@ public class ProfileActivity extends AppCompatActivity {
                                 NormalResp resp = new Gson().fromJson(msg,NormalResp.class);
                                 Toast.makeText(ProfileActivity.this, resp.getMsg(), Toast.LENGTH_LONG).show();
                                 SPHelper.sava(getApplicationContext(),"token",resp.getToken());
+                                SPHelper.sava(getApplication(),"nickname",nick);
                             }
 
                             @Override

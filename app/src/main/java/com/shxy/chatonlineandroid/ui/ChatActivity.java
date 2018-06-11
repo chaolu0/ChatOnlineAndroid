@@ -71,12 +71,14 @@ public class ChatActivity extends AppCompatActivity implements MsgCallBack{
                 if (session == null)
                     return;
                 SendBody body = new SendBody();
+                String tempMessage = SPHelper.get(getApplicationContext(),"nickname") + ":"+msgEdit.getText().toString();
                 body.setKey("forward");
-                body.setData(msgEdit.getText().toString());
+                body.setData(tempMessage);
                 WriteFuture future = session.write(body);
                 future.awaitUninterruptibly();
-                messageList.add(new ChatMessage(SPHelper.get(getApplication(),"username"),msgEdit.getText().toString()));
+                messageList.add(new ChatMessage(tempMessage,SPHelper.get(getApplication(),"nickname")));
                 adapter.notifyDataSetChanged();
+                msgEdit.setText("");
             }
         });
     }
@@ -126,7 +128,13 @@ public class ChatActivity extends AppCompatActivity implements MsgCallBack{
     @Override
     public void onRecvMsg(ChatMessage body) {
         messageList.add(body);
-        adapter.notifyDataSetChanged();
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                adapter.notifyDataSetChanged();
+            }
+        });
+
     }
 
     private class ChatAdapter extends BaseAdapter {
@@ -168,7 +176,7 @@ public class ChatActivity extends AppCompatActivity implements MsgCallBack{
             }
 
             ChatMessage msg = list.get(i);
-            holder.idTv.setText(msg.getUsername() + ":" + msg.getMsg());
+            holder.idTv.setText(msg.getMsg());
             return view;
         }
     }

@@ -81,6 +81,8 @@ public class RoomsActivity extends AppCompatActivity {
         });
     }
 
+
+
     private void initData() {
         Intent intent = getIntent();
         resp = (LoginResp) intent.getSerializableExtra("data");
@@ -127,8 +129,8 @@ public class RoomsActivity extends AppCompatActivity {
             }
 
             Room msg = list.get(i);
-            holder.idTv.setText(msg.getHouseId() + "");
-            holder.inTv.setText(msg.getNowCount() + "/" + msg.getMaxCount() + "");
+            holder.idTv.setText("第 "+msg.getHouseId() + " 号房间");
+            holder.inTv.setText("人数： "+msg.getNowCount() + "/" + msg.getMaxCount() + "");
             return view;
         }
     }
